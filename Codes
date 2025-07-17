@@ -1,0 +1,35 @@
+# Load required libraries
+library(tidyverse)
+
+# Read metabolomics data
+data <- read.csv("metabolomics_data.csv")
+
+# View the structure
+str(data)
+
+# Check for missing values
+summary(data)
+
+
+ # Log Transform and Normalization
+# Replace 0 or negative values (common before log transform)
+data[data <= 0] <- NA
+
+# Log2 transformation
+data_log <- log2(data[, -1] + 1)  # assuming first column is ID or sample name
+
+# Add back sample names
+data_log <- cbind(SampleID = data$SampleID, data_log)
+
+# Perform PCA
+pca <- prcomp(na.omit(data_log[, -1]), scale. = TRUE)
+
+# Plot PCA
+library(ggplot2)
+scores <- as.data.frame(pca$x)
+scores$SampleID <- data_log$SampleID
+
+ggplot(scores, aes(x = PC1, y = PC2)) +
+  geom_point() +
+  labs(title = "PCA of Metabolomics Data", x = "PC1", y = "PC2")
+
